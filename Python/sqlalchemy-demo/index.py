@@ -5,6 +5,9 @@ engine = create_engine('mysql+pymysql://root:root@localhost:3306/demo')
 
 # 边提交边进行
 with engine.connect() as conn:
+    # 删除表
+    conn.execute(text('DROP TABLE IF EXISTS `users`'))
+
     # 创建表
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS `users` (

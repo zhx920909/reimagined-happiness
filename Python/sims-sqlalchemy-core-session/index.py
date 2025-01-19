@@ -2,9 +2,11 @@ from sqlalchemy import create_engine
 
 from sqlalchemy import text
 
+from sqlalchemy.orm import Session
+
 engine = create_engine('mysql+pymysql://root:root@localhost:3306/sims')
 
-conn = engine.connect()
+session = Session(engine)
 
 
 def create_table():
@@ -17,7 +19,7 @@ def create_table():
     `stu_gender` varchar(20) not null
     )
     """
-    conn.execute(text(sql))
+    session.execute(text(sql))
 
 
 # 欢迎界面
@@ -152,7 +154,7 @@ def add_stu():
     stu_gender = input('请输入学生性别：')
 
     sql = text('insert into `student` (`stu_no`, `stu_name`, `stu_age`, `stu_gender`) values (:stu_no, :stu_name, :stu_age, :stu_gender)')
-    result = conn.execute(sql, [{'stu_no': stu_no, 'stu_name': stu_name, 'stu_age': stu_age, 'stu_gender': stu_gender}])
+    result = session.execute(sql, [{'stu_no': stu_no, 'stu_name': stu_name, 'stu_age': stu_age, 'stu_gender': stu_gender}])
     """
     rowcount 主要用于报告 UPDATE 或 DELETE 语句中匹配的行数。
     对于其他类型的语句（如 INSERT 和 SELECT），某些数据库API（DBAPI）可能不支持或提供有意义的 rowcount 值。
@@ -160,11 +162,11 @@ def add_stu():
     对于 INSERT 语句，可以使用 lastrowid 来确认插入操作是否成功。这个属性通常更可靠，因为它直接返回插入行的主键值，但是需要确定的是，主键必须设置为 auto_increment。
     """
     if result.lastrowid:
-        conn.commit()
+        session.commit()
         print(f'增加学生 {stu_name} 成功')
         return True
     else:
-        conn.rollback()
+        session.rollback()
         print(f'增加学生 {stu_name} 失败')
         return False
 
@@ -181,24 +183,24 @@ def delete_stu():
     else:
         stu_name = student[2]
         sql = text('delete from `student` where `stu_no` = :stu_no')
-        result = conn.execute(sql, [{'stu_no': stu_no}])
+        result = session.execute(sql, [{'stu_no': stu_no}])
         if result.rowcount:
-            conn.commit()
+            session.commit()
             print(f'删除 {stu_name} 成功')
         else:
-            conn.rollback()
+            session.rollback()
             print(f'删除 {stu_name} 失败')
 
 
 # 删除所有学生信息
 def delete_all_stu():
     sql = text('delete from `student`')
-    result = conn.execute(sql)
+    result = session.execute(sql)
     if result.rowcount:
-        conn.commit()
+        session.commit()
         print('删除成功')
     else:
-        conn.rollback()
+        session.rollback()
         print('删除失败')
 
 
@@ -226,9 +228,9 @@ def modify_stu():
             print('没有修改任何信息')
         else:
             sql = text('update `student` set `stu_name` = :stu_name, `stu_age` = :stu_age, `stu_gender` = :stu_gender where `stu_no` = :stu_no')
-            result = conn.execute(sql, [{'stu_no': stu_no, 'stu_name': stu_name, 'stu_age': stu_age, 'stu_gender': stu_gender}])
+            result = session.execute(sql, [{'stu_no': stu_no, 'stu_name': stu_name, 'stu_age': stu_age, 'stu_gender': stu_gender}])
             if result.rowcount:
-                conn.commit()
+                session.commit()
                 print('修改成功')
                 if stu_name != stu_name_temp:
                     print(f'\t{stu_name_temp} 到 {stu_name}')
@@ -238,7 +240,7 @@ def modify_stu():
                     print(f'\t{stu_gender_temp} 到 {stu_gender}')
                 return True
             else:
-                conn.rollback()
+                session.rollback()
                 print('修改失败')
                 return False
 
@@ -246,7 +248,7 @@ def modify_stu():
 # 根据学号查询学生信息
 def query_stu(stu_no):
     sql = text('select * from `student` where stu_no = :stu_no')
-    result = conn.execute(sql, {'stu_no': stu_no})
+    result = session.execute(sql, {'stu_no': stu_no})
     row = result.fetchone()
     return row
 
@@ -256,7 +258,7 @@ def query_all_stu():
     # 查询语句
     sql = text('select * from `student`')
     # 获取结果集
-    result = conn.execute(sql)
+    result = session.execute(sql)
     # 遍历结果集
     rows = result.fetchall()
     # 返回元组列表

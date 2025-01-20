@@ -103,6 +103,8 @@ with engine.connect() as conn:
 
 TODO: Result 对象
 
+返回的对象被称为 Result 结果行的可迭代对象。对象 Row 本身的作用类似于 Python 命名元组。
+
 ###### 增删改
 
 1. 边提交边进行
